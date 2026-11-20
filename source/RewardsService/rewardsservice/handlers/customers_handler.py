@@ -13,6 +13,9 @@ import validators
 from pymongo import MongoClient, errors
 from .base_handler import BaseHandler
 
+MINIMUM_REWARDS = 100
+MAXIMUM_REWARDS = 1000
+
 DB = BaseHandler.CLIENT["Rewards"]
 
 def _validate_customers_request(data):
@@ -84,12 +87,11 @@ def _build_customer_rewards(validated_data):
     )
 
     # Nearest reward point total will always be an integer, rounded down to the nearest hundred
-    reward_points = int((total_points // 100) * 100)
+    reward_points = min(int((total_points // MINIMUM_REWARDS) * 100), MAXIMUM_REWARDS)
 
     # If the reward points are under the first tier the user should have None.
-    if reward_points < 100:
-        current_reward = None
-        next_reward = DB.rewards.find_one({"points": {"$gte": reward_points}})
+    if reward_points < MINIMUM_REWARDS:
+        current_reward, next_reward = None, DB.rewards.find_one({"points": {"$gte": reward_points}})
     else:
         # Find the relevant reward and the next reward
         rewards = list(
@@ -100,17 +102,17 @@ def _build_customer_rewards(validated_data):
             .limit(2)
         )
 
-        current_reward, next_reward = rewards[0], rewards[1]
 
-    # Next tier progress
-    next_tier_progress = round(1 - ((next_reward["points"] - total_points) / 100), 2)
+        current_reward, next_reward = (rewards[0], rewards[1]) if len(rewards) > 1 else (rewards[0], None)
+
+    next_tier_progress = round(1 - ((next_reward["points"] - total_points) / 100), 2) if next_reward else 0
 
     return {
         "email": email,
         "rewardPoints": total_points,
         "rewardTier": current_reward["tier"] if current_reward else None,
         "rewardTierName": current_reward["rewardName"] if current_reward else None,
-        "nextRewardTier": next_reward["tier"],
+        "nextRewardTier": next_reward["tier"] if next_reward else None,
         "nextRewardTierProgress": next_tier_progress,
     }
 
