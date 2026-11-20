@@ -109,7 +109,7 @@ def _build_customer_rewards(validated_data):
 
     return {
         "email": email,
-        "rewardPoints": total_points,
+        "rewardPoints": min(total_points, MAXIMUM_REWARDS),
         "rewardTier": current_reward["tier"] if current_reward else None,
         "rewardTierName": current_reward["rewardName"] if current_reward else None,
         "nextRewardTier": next_reward["tier"] if next_reward else None,
