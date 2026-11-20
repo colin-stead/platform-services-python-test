@@ -24,6 +24,9 @@ def _validate_customers_request(data):
 
     Returns:
         dict: Error code dict to use for response or validated data to build customer document with.
+
+    See Also:
+        _build_customer_rewards(<dict>) (line 59)
     """
     validation_errors = {}
 
@@ -58,12 +61,18 @@ def _build_customer_rewards(validated_data):
     Gets reward data for a customer based on their order totals and existing points.
 
     Parameters:
-        validated_data: The order data to build a Customer with, validated in _validate_customers_request
+        validated_data (dict): The order data to build a Customer with, validated in _validate_customers_request
+        which contains two items:
+            - "order_total" (int/float): The total value of the order
+            - "email" (str): The user email
 
     Returns:
         dict: A dictionary with the customer's email and reward-based data.
+
+    See Also:
+        _validate_customers_request(<dict>) (line 18)
     """
-    # Create customer with data provided if the data is valid
+    # Find potential existing customer
     email = validated_data["email"]
     existing_customer = DB.customers.find_one({"email": email})
 
@@ -128,18 +137,13 @@ class CustomersHandler(BaseHandler):
 
     async def post(self, _):
         """
-        Create or update a customer with customer rewards.
-        
-        If an email already exists in the db, update the customer with the data provided.
-            - Add the points
-            - Replace everything else
-
-        If it's a new email, create the customer and store their rewards.
+        Create or update a customer with customer rewards. Upsert the data into the db.
 
         Endpoint:
             POST /customers
 
-        See Also: _get_rewards_data() (line 18)
+        See Also: 
+            _validate_customers_request(<dict>) (line 18)
         """
         customer_data = json.loads(self.request.body)
 
