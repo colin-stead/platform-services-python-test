@@ -102,7 +102,7 @@ def _build_customer_rewards(validated_data):
             .limit(2)
         )
 
-
+        # If the user has reached the top tier, there will be no next reward to earn or progress to calculate.
         current_reward, next_reward = (rewards[0], rewards[1]) if len(rewards) > 1 else (rewards[0], None)
 
     next_tier_progress = round(1 - ((next_reward["points"] - total_points) / 100), 2) if next_reward else 0
