@@ -68,6 +68,7 @@ Setup stays the same with `validators 0.35.0` added to the [requirements.txt](re
 
 # Assumptions & Tradeoffs
 * On the "Create Customer" endpoint `POST /customers` I assumed we wouldn't want duplicate customers with the same IDs. Instead of adding another PUT/PATCH route and requiring the call to come from there I opted to simply update an existing customer when found.
+* I assumed "No more rewards can be earned" also meant there's a cap to reward points a customer can earn. So for this project, once a customer hits the "J Tier", they can no longer earn more points and are capped at 1000.
 * On the "Get Customer Details" endpoint `GET /customers/{customer_email}` I'm not a fan of passing an email directly to the URL. In a production setting I'd opt for an ID key.
 
 
