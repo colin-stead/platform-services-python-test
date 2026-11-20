@@ -55,21 +55,24 @@ def _validate_customers_request(data):
 
 def _build_customer_rewards(validated_data):
     """
-    Gets reward data for a customer based on their order totals and existing points
+    Gets reward data for a customer based on their order totals and existing points.
 
     Parameters:
-        validated_data: The order data to build a Customer with
+        validated_data: The order data to build a Customer with, validated in _validate_customers_request
 
     Returns:
         dict: A dictionary with the customer's email and reward-based data.
     """
-    # Add total to points on existing customer's account if they exist, otherwise just use the order total
+    # Create customer with data provided if the data is valid
     email = validated_data["email"]
     existing_customer = DB.customers.find_one({"email": email})
-    points_total = validated_data["orderTotal"] + existing_customer["rewardPoints"] if existing_customer else validated_data["orderTotal"]
-    
-    # Create customer with data provided if the data is valid
-    total_points = math.floor(points_total)
+
+    # Add total to points on existing customer's account if they exist, otherwise just use the order total
+    total_points = math.floor(
+        validated_data["orderTotal"] + existing_customer["rewardPoints"]
+        if existing_customer
+        else validated_data["orderTotal"]
+    )
 
     # Nearest reward point total will always be an integer, rounded down to the nearest hundred
     reward_points = int((total_points // 100) * 100)
