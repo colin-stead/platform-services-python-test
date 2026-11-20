@@ -41,3 +41,34 @@ Create RESTful endpoint(s) to calculate, store, and retrieve customer rewards da
 * $ docker-compose build
 * $ docker-compose up -d
 * Services are accessible at http://localhost:7050/
+
+# Solution
+
+Setup stays the same with `validators 0.35.0` added to the [requirements.txt](requirements.txt) file for customer email validation without a need for regex. In a real setting this could be used for initial validation but ultimately a confirmation email would need to be sent to the user to validate the email.
+
+# Endpoints
+* `POST /customers`
+    * Creates a new customer in the Rewards DB under the customers collection. Updates the Customer if the Customer already exists.
+    * Response Codes 200, 201, and 422
+    * Example 201/200 Response body:
+        ```
+        {
+            "email": "test.customer@urbn.com",
+            "orderTotal": 103.78,
+            "rewardPoints": 103,
+            "rewardTier": "A",
+            "rewardTierName": "5% off purchase",
+            "nextRewardTier": "B",
+            "nextRewardTierProgress": 0.97
+        }
+        ```
+
+* `GET /customers`
+* `GET /customers/{customer_email}`
+
+# Assumptions & Tradeoffs
+* On the "Create Customer" endpoint `POST /customers` I assumed we wouldn't want duplicate customers with the same IDs. Instead of adding another PUT/PATCH route and requiring the call to come from there I opted to simply update an existing customer when found.
+* On the "Get Customer Details" endpoint `GET /customers/{customer_email}` I'm not a fan of passing an email directly to the URL. In a production setting I'd opt for an ID key.
+
+
+
